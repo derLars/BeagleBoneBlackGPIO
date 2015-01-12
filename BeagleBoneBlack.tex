@@ -1,0 +1,372 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage[svgnames]{xcolor}
+\usepackage{graphicx}
+\usepackage{placeins}
+\usepackage{listings}
+\usepackage[utf8]{inputenc}
+\usepackage[german]{babel}
+\usepackage{scrpage2}
+%\usepackage[T1]{fontenc}
+%\overfullrule=2cm
+
+
+\pagestyle{scrheadings}
+\clearscrheadfoot
+\ihead[]{Lars C. Schwensen}
+\ohead[\pagemark]{\pagemark}
+\chead[]{}
+\cfoot[]{}
+
+\newcommand{\terminal}[1]{\begin{tabbing} \indent #1\end{tabbing}}
+\pagestyle{scrheadings}
+
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+\newcommand*{\titlePage}{\begingroup % Create the command for including the title page in the document
+\newlength{\drop} % Command for generating a specific amount of whitespace
+\drop=0.1\textheight % Define the command as 10% of the total text height
+%\hdrop=0.05\textheight % Define the command as 5% of the total text height
+\centering % Center all text
+
+\rule{\textwidth}{1pt}\par % Thick horizontal line
+\vspace{2pt}\vspace{-\baselineskip} % Whitespace between lines
+\rule{\textwidth}{0.4pt}\par % Thin horizontal line
+
+\centering % Center all text
+
+{Hochschule für Angewandte Wissenschaften Hamburg}\par
+{Fakultät Technik und Informatik}\par
+{Department Informatik}\par
+\vspace{0.25\drop}
+
+\vspace{0.75\drop}
+
+\textcolor{Black}{ % Black font color
+{\Huge BeagleBone Black}\\[0.5\baselineskip] % Title line 1
+{\Large Inbetriebnahme der}\\[0.75\baselineskip] % Title line 2
+{\Huge General-Purpose Input/Output}} % Title line 3
+
+\vspace{\drop}
+
+{\Large Hausarbeit}
+\vspace{0.75\drop}
+
+{Wahlpflichtmodul: Deeply Embedded}\par
+{Dozent: Prof. Dr. Stephan Pareigis}\par
+
+\vspace{2.5\drop}
+
+{Schwensen, Lars Christian}\par
+{Matrikel-Nr.: 2124933}\par
+{Fachsemester 5}\par
+
+%\vspace{0.25\drop} % Whitespace between the title and short horizontal line
+\rule{0.3\textwidth}{0.4pt}\par % Short horizontal line under the title
+{\today}\par
+
+\rule{\textwidth}{0.4pt}\par % Thin horizontal line
+\vspace{2pt}\vspace{-\baselineskip} % Whitespace between lines
+\rule{\textwidth}{1pt}\par % Thick horizontal line
+
+\endgroup}
+
+%----------------------------------------------------------------------------------------
+%	Introdution Chapter
+%----------------------------------------------------------------------------------------
+\newcommand*{\introdution}{\begingroup
+\section{Einleitung}\label{sec:Intro}
+{Raspberry Pi, pcDuino, BeagleBone Black... Der Markt bietet eine Vielzahl an erschwinglichen Einplatinen-Computern. Ist so ein System gekauft um ein konkretes Projekt zu verwirklichen, oder einfach nur zu experimentieren, stellt sich die Frage der Vorgehensweise um das System nach eigenen Wünschen zu konfigurieren und arbeiten zu lassen. Die folgenden Kapitel vermitteln eine Grundbasis an Informationen um den BeagleBone Black mithilfe des TI-SDK in Betrieb zu nehmen.} 
+
+\endgroup}
+
+%----------------------------------------------------------------------------------------
+%	Hardware Chapter
+%----------------------------------------------------------------------------------------
+\newcommand*{\Hardware}{\begingroup
+\section{Hardware}\label{sec:hardware}
+\begin{figure}[ht]
+  \centering
+      \includegraphics[width=0.5\textwidth, angle=90]{Pictures/001-BeagleBoneBlack.jpg}
+      \caption{BeagleBone Black}{(http://www.ti.com/ww/en/beagleboard/product\_detail\_black\_lg.jpg)}
+     \label{BeagleBone Black}
+\end{figure}
+
+{\noindent Der BeagleBone Black (Abbildung \ref{BeagleBone Black}) ist ein von Texas Instruments entwickelter Einplatinen-Computer. Laut dem System Reference Manual ist dieser seit dem 04.01.2013 verfügbar und aktuell in der Version (Rev C.1) erhältlich\cite{SystemReferenceManual-P14}.}
+
+%{\footnote{System Reference Manual Revision C.1, Seite 14 [Stand 22.05.2014]}.}
+
+\subsection{Ressourcen}\label{sec:ressources}
+{\noindent Die aktuelle Version beinhaltet einen Sitara\texttrademark AM3358 ARM Cortex-A8 Prozessor. Dieser 32Bit RISC Prozessor arbeitet mit einer Taktrate von bis zu 1GHz\cite{TIam3358}. Außerdem sind 512MB RAM DDR3 Arbeitsspeicher und ein 4GB embedded Flash-Baustein verbaut\cite{SystemReferenceManual-P30}.}
+
+\subsection{Anschlüsse}\label{sec:connections}
+{\noindent Die Spannungsversorgung geschieht über eine 5V-DC-Buchse. Sofern gewähr-leistet ist, dass der Host-Computer die benötigte Leistung zur Verfügung stellen kann, kann die Spannungsversorgung alternativ über die MiniUSB Anschlussbuchse geschehen\cite{SystemReferenceManual-P18}. Die Verbindung mit einem Netzwerk geschieht über eine 10/100 Ethernet Buchse. Außerdem bietet ein USB2.0 Anschluss die Anschlussmöglichkeit von USB-Peripherie und eine microHDMI Buchse die Anschlussmöglichkeit eines Monitors. Der Interne Speicher lässt sich über einen MicroSD-Kartenslot erweitern\cite{SystemReferenceManual-P30}.}
+
+\subsection{Pinbänke}\label{sec:pinbanks}
+{Der BeagleBone Black besitzt zwei Pinbänke mit jeweils 46 Anschlüssen. Diese dienen der GPIO-Kommunikation, wodurch sich das System sowohl durch gekaufte Capes, aber auch durch eigene Hardware und Schaltkreise erweitern lässt. Jeder Pin besitzt bis zu acht individuelle Modis. Diese und die Belegung der Pinbänke sind vollständig im System Reference Manual dokumentiert\cite{SystemReferenceManual-P82}.}
+\endgroup}
+
+%----------------------------------------------------------------------------------------
+%	SDK Chapter
+%----------------------------------------------------------------------------------------
+\newcommand*{\tisdk}{\begingroup
+\section{TI-SDK}\label{sec:sdk}
+{Das TI-SDK ist ein von Texas Instruments bereitgestelltes Linux development Kit welches die benötigten Komponenten zum Entwickeln von Software für den BeagleBone Black beinhaltet in der aktuellen Version 07.00.00.00 kostenfrei zum Download bereisteht\cite{TIDownload}. Dem Installations-Guide von Texas Instruments zu folge sei das TI-SDK derzeit ausschließlich für das Betriebssystem Ubuntu in den Versionen 10.04 und 12.04 getestet\cite{TIWikiUbuntu}. Es empfiehlt sich daher eine der genannten Versionen zu verwenden. Die Installation des Systems kann nativ auf einem Computer oder als virtuelles Betriebssystem\footnote{Das virtuelle System benötigt zwingend Zugriff auf das SD-Kartenlesegerät} erfolgen.}
+
+\subsection{Installation}\label{sec:install}
+{\noindent Die heruntergeladene Binär-Datei lässt sich im Terminal durch den Aufruf \terminal{./ti-sdk-am335x-evm-07-00-00-00-Linux-x86-Install.bin} ausführen wodurch ein grafisches Installationsmenü gestartet wird. Innerhalb dieses Menüs erfolgt die Abfrage eines Installationspfads. Im Defaultzustand wird dieser mit /opt/ti-sdk-am335x-evm-07.00.00.00 angegeben, welcher nach Abschluss der Installation alle relevanten Programme und Dateien beinhaltet. Anschließend wird durch Ausführen des Scripts \terminal{/opt/ti-sdk-am335x-evm-07.00.00.00/setup.sh} das System konfiguriert. Erforderlich ist zum Erstellen einer seriellen Verbindung die Eingabe der seriellen Schnittstelle\footnote{der Befehl dmesg gibt Auskunft über angeschlossene serielle Schnittstellen} an die der BeagleBone Black angeschlossen ist. Außerdem erfordert das Script die Angabe, dass das Betriebssystem auf die SD-Karte gespeichert wird. Weitere Eingabeaufforderungen können mittels der Enter-Taste im Defaultzustand gelassen werden.}
+
+\subsection{Linux Image}\label{sec:image}
+{\noindent Das TI-SDK beinhaltet die Linux-Arago Distribution, welche zum Einen als sogenanntes Prebuild zur Verfügung steht, aber auch als Sourcecode, welcher zur Erzeugung eines eigenes Build genutzt werden kann. Ein vollständiges Build besteht aus\\}
+
+\begin{tabular}{c | p{9cm}}
+  X-Loader & setzt die Pin-Multiplexer und lädt den Bootloader\\ \hline
+  Bootloader & setzt die Boot-Parameter und startet den Kernel\\ \hline
+  Kernel Image & enthält den Kernel des Betriebssystems\\ \hline
+  Root Dateisystem & beinhaltet die gesamte Struktur des Dateisystems sowie alle Dateien, Einstellungen und Geräteinformationen vom Betriebssystem\\ \hline
+  Devicetree & beinhaltet die Informationen und Parameter über die Pin-Multiplexer der Pinbuchsen-Bänke\\
+\end{tabular}
+
+\subsubsection{Build erzeugen}\label{sec:build}
+{\noindent Zur Erzeugung eines eigenen Build steht das Makefile \terminal{/opt/ti-sdk-am335x-evm-07.00.00.00/Makefile} vorkonfiguriert zur Verfügung. Wird dieses durch Aufruf von \terminal{make} ausgeführt, dann wird ein komplettes Build in den Grundeinstellungen kompiliert.}
+
+\clearpage 
+
+{\noindent Um eigene Einstellungen am Build vornehmen zu können, muss das Einstellungsmenü "menuconfig" aufgerufen werden. Hierfür wird das Makefile im Abschnitt "Building the Linux Kernel" mit \terminal{\$(MAKE) -j \$(MAKE\_JOBS) -C \$(LINUXKERNEL\_INSTALL\_DIR) \\ARCH=arm CROSS\_COMPILE=\$(CROSS\_COMPILE)} ergänzt. Dies hat zur Folge, dass durch Ausführen des Makefiles das Konfigurationsmenü gestartet wird. Alle im Konfigurationsmenü gesetzten Einstellungen werden in der Datei \terminal{/opt/ti-sdk-am335x-evm-07.00.00.00/board-support/linux-3.12.10-ti2013.12.01/.config} abgespeichert und beim Kompilieren des Builds berücksichtigt. Nach Abschluss der Kompilation finden sich im Installationspfad folgende Dateien\\}
+
+\begin{tabular}{c | p{9cm}}
+  X-Loader & board-support/u-boot-2013.10-ti2013.12.01/MLO \\ \hline
+  Bootloader & board-support/u-boot-2013.10-ti2013.12.01/u-boot\\ \hline
+  Kernel Image & board-support/linux-3.12.10-ti2013.12.01/arch/arm/boot/zImage\\ \hline
+  Root Dateisystem & targetNFS/\\ \hline
+  Devicetree & board-support/linux-3.12.10-ti2013.12.01/arch/arm/boot/dts/am335x-boneblack.dtb\\
+\end{tabular}
+
+
+\subsubsection{SD-Karte einrichten}\label{sec:sdCard}
+{\noindent Das fertige Linux-Betriebssystem besteht mindestens aus zwei Partitionen. Die Boot-Partition enthält den Bootloader, den X-Loader, das Kernel Image und den Devicetree. Die Root-Partition enthält das Root Dateisystem. Die Partitionierung und Einrichtung der SD-Karte geschieht durch den Aufruf des Scripts \terminal{/opt/ti-sdk-am335x-evm-07.00.00.00/bin/create-sdcard.sh} Sofern ein eigenes Build für die Einrichtung verwendet werden soll, müssen die Pfade der erforderlichen Dateien angegeben werden. Nach Abschluss ist das Target-System komplett eingerichtet und kann im BeagleBone Black verwendet werden.}
+
+\subsubsection{Systemstart}\label{sec:start}
+{\noindent Im Auslieferungs-Zustand beinhaltet der BeagleBone Black als Betriebssystem eine Linux-Angstrom Distribution, welche auf dem internen Flash-Baustein gespeichert ist. Wird der BeagleBone Black durch Anschluss einer Spannungsquelle gestartet, dann sucht das System entsprechend der Reihenfolge}
+
+\begin{enumerate}
+  \item Flash-Baustein
+  \item microSD Kartenslot
+  \item UART0 Schnittstelle
+  \item USB0 Schnittstelle
+\end{enumerate}
+
+{\noindent die Quellen nach einer gültigen Boot-Partition ab und startet von dieser\cite{SystemReferenceManual-P69}.}
+
+\FloatBarrier
+
+\begin{figure}[ht]
+    \centering
+      \includegraphics[width=0.4\textwidth]{Pictures/004-BootButton.jpg}
+      \caption{Boot-Button}{(http://www.ti.com/ww/en/beagleboard/product\_detail\_black\_lg.jpg)}
+      \label{BootButton}
+\end{figure}
+
+{\noindent Durch drücken des Boot-Tasters (Abbildung \ref{BootButton}) ändert sich die Reihenfolge entsprechend\cite{SystemReferenceManual-P69}}
+
+\begin{enumerate}
+  \item SPI0
+  \item microSD Kartenslot
+  \item UART0 Schnittstelle
+  \item USB0 Schnittstelle
+\end{enumerate}
+
+{\noindent Wird die MLO-Datei von der Boot-Partition auf dem Flash-Baustein gelöscht oder umbenannt, so wird die Linux-Angstrom Distribution bei zukünftigen Systemstarts nicht mehr gestartet. Dies hat zur Folge, dass die SD-Karte die erste auffindbare Boot-Partition beinhaltet und somit bei Systemstart gestartet wird.}
+
+\subsection{Serielle Kommunikation}\label{sec:serial}
+{\noindent Für den Aufbau einer seriellen Verbindung beinhaltet das TI-SDK das Programm "minicom", welches durch den Befehl \terminal{minicom} aufgerufen wird. Die im Abschnitt \ref{sec:install} erstellte Verbindung wird so automatisch gestartet und bietet vollen Zugriff auf das Dateisystem vom BeagleBone Black.}
+
+\subsection{Toolchain}\label{sec:toolchain}
+{\noindent Das TI-SDK beinhaltet die Linaro-Toolchain zum Entwickeln von Software für Cortex A8 Systeme\cite{TICortexA8} in den Programmiersprachen C und C++. Der Cross-Compiler der Linaro-Toolchain kann durch einbinden der Unterordner des Installationspfads\\}
+
+\begin{tabular}{c | p{9cm}}
+  Cross-Compiler & linux-devkit/sysroots/i686-arago-linux/usr/bin/\\ \hline
+  Bibliotheken & linux-devkit/sysroots/cortexa8hf-vfp-neon-3.8-oe-linux-gnueabi/usr/include/\\
+  
+\end{tabular}\\
+
+{\noindent den Umgebungsvariablen des Systems hinzugefügt und anschließend verwendet werden. Das TI-SDK bietet alternativ die Möglichkeit im Terminal den Befehl \terminal{. /opt/ti-sdk-am335x-evm-07.00.00.00/linux-devkit/environment-setup} auszuführen, wodurch temporär innerhalb des Terminals die Systemeigenen Umgebungsvariablen ausgeschaltet und vorkonfigurierte Systemvariablen zum Verwenden des Cross-Compilers eingeschaltet werden. }
+
+\begin{figure}[]
+  \centering
+    \lstinputlisting[language=C++, frame=single]{Code/helloworld.cpp}
+    \caption{Hello World Programm in C++}
+    \label{HelloWorld}
+\end{figure}
+
+\FloatBarrier
+
+{\noindent Die Kompilierung von C++ Sourcecode, wie in Abbildung \ref{HelloWorld} zu sehen, geschieht durch den Befehl \terminal{arm-linux-gnueabihf-g++ helloworld.cpp -o helloworld} Der Compiler erzeugt in diesem Beispiel eine Datei namens helloworld, welche auf den BeagleBone Black transferiert und ausgeführt werden kann.}
+
+\endgroup}
+
+%----------------------------------------------------------------------------------------
+%	GPIO Chapter
+%----------------------------------------------------------------------------------------
+\newcommand*{\gpio}{\begingroup
+
+\section{GPIO}\label{sec:gpio}
+
+\begin{figure}[h]
+    \centering
+      \includegraphics[width=0.5\textwidth]{Pictures/005-PinHeader.png}
+      \caption{Pinbänke des BeagleBone Black}
+      \label{PinHeader}
+\end{figure}
+
+\FloatBarrier
+
+{\noindent Die Pinbänke des BeagleBone Black (Abbildung \ref{PinHeader}) besitzen insgesamt 92 Pins, wovon 16 Pins der Spannungsversorgung und Masse dienen. Alle weiteren Pins stehen, je nach Konfiguration, der General-Purpose Input/Output Kommunikation zur Verfügung. Einen Zugriff auf einen großteil der  Hardware-Komponenten bietet Linux durch den Pfad \terminal{/sys/class/} Hier finden sich unter Anderem konfigurationsmöglichkeiten für I2C- und SPI-Busse, Displays, usw.} 
+
+\subsection{Verfügbarkeit eines Pins ermitteln}\label{sec:gpioModi}
+{\noindent Bevor ein Pin verwendet wird, sollte zunächst geprüft werden, in welchem Modus dieser sich befindet. Als erstes Beispiel dient hier der Pin P9.17,  welcher auf der Bank P9 zu finden ist und mit GPIO0\_5 benannt ist. Ein Blick in das System Reference Manual gibt Auskunft über die verschiedenen Modi dieses Pins\cite{SystemReferenceManual-P82}.}
+
+\begin{figure}[ht]
+    \centering
+      \includegraphics[width=1.0\textwidth]{Pictures/006-P917.png}
+      \caption{Ausschnitt aus dem System Reference Manual Pin P9.17}
+      \label{P917}
+\end{figure}
+
+{\noindent Wie in Abbildung \ref{P917} zu erkennen besitzt der gewählte Pin neben des GPIO-Modus noch die Modis: spi0\_cs0, MMC2\_sdwp, I2C1\_SCL, ehrpwm0\_synci und pr1\_uart0\_txd. Die Information des aktiven Modus erhalten wir durch den Befehl \terminal{ls -l /sys/kernel/debug/omap\_mux} welcher, wie in Abbildung \ref{spi0cs0} zu erkennen, unter Anderem einen Modus des gewählten Pins auflistet. Dies ist nicht zwingend der derzeit aktive Modus des Pins.}
+
+
+\begin{figure}[h]
+    \centering
+      \includegraphics[width=1.0\textwidth]{Pictures/008-AuflistungP917.png}
+      \caption{Auflistung Pin Modis für Pin P9.17}
+      \label{spi0cs0}
+\end{figure}
+
+\FloatBarrier
+
+{\noindent Erst durch den Befehl \terminal{ls -l /sys/kernel/debug/omap\_mux/spi0\_cs0} wird der aktive Modus aufgelistet.} 
+
+\begin{figure}[h]
+    \centering
+      \includegraphics[width=1.0\textwidth]{Pictures/009-ModusP917.png}
+      \caption{Aktiver Modus für Pin P9.17}
+      \label{p917modus}
+\end{figure}
+
+{\noindent In Abbildung \ref{p917modus} ist zu erkennen, dass sich der gewählte Pin derzeit im zweiten Modus (I2C1\_SCL) befindet. Sofern es keinen Einfluss auf das konfigurierte System hat, kann der GPIO-Modus durch den Befehl \terminal{echo 7 \textgreater /sys/kernel/debug/omap\_mux/spi0\_cs0} erreicht werden. Diese Änderung ist bis zu einem erneuten Wechsel des Modus oder einem Neustart des Systems gültig. Kann eine negative Beeinflussung durch den Moduswechsel auf das System nicht ausgeschlossen werden, weil zum Beispiel weitere Hardware an den I2C-Bus angeschlossen ist, muss ein anderer freier Pin gesucht werden. Als zweites Beispiel dient der Pin P9.13, welcher ebenfalls auf der Bank P9 platziert ist und den Namen GPIO0\_31 hat. Eine Auflistung des aktiven Modus nach dem gleichen Schema gibt preis, dass dieser Pin für die Verwendung des GPIO-Modus bedenkenlos geeignet ist, da sich dieser schon im entsprechenden Modus befindet. (Abbildung \ref{p913modus})}
+
+\begin{figure}[ht]
+    \centering
+      \includegraphics[width=1.0\textwidth]{Pictures/010-ModusP913.png}
+      \caption{Aktiver Modus für Pin P9.13}
+      \label{p913modus}
+\end{figure}
+
+\subsection{Pin verwenden}\label{sec:gpioUse}
+{\noindent Steht ein Pin, wie in Abschnitt \ref{sec:gpioModi} ermittelt, zur Verfügung dann muss dieser zunächst durch den Befehl \terminal{echo 31 \textgreater /sys/class/gpio/export} in das Dateisystem eingebunden werden. Hierdurch wird der Pfad \terminal{/sys/class/gpio/gpio31} erzeugt, welcher zur Modifikation des Pins P9.13 dient. Eine Auflistung dieses Pfads beinhaltet unter Anderem die Dateien direction, value, edge und active\_low\cite{kernelGPIO}. Die Inhalte der jeweiligen Dateien lassen sich durch den Befehl \terminal{cat [Dateiname]} auflisten. Der Inhalt aus direction definiert ob es sich um einen input-Pin oder einen output-Pin handelt. Im Defaultzustand ist jeder Pin als input-Pin definiert. Durch schreiben eines out in die Datei mittels des Befehls \terminal{echo out \textgreater direction} wird der Pin zu einem output-Pin. Der aktive Pegel des Pins wird durch value definiert. Ist ein Pin als input-Pin definiert, dann enthält value die Information darüber, ob an dem Pin eine Spannung, also ein high-Pegel, anliegt. Dies wird durch eine 1 signalisiert und kann, wie beschrieben, mittels des Befehls \terminal{cat value} abgefragt werden. Sofern keine Spannung am Pin anliegt, beinhaltet value eine 0. Das System Reference Manual weist darauf hin, dass die Pins des BeagleBone Black nur 3,3V tolerant seien und nicht 5V tolerant\cite{SystemReferenceManual-P82}. Liegt dennoch eine Spannung von mehr als 3,3V an einem Pin an, kann der BeagleBone Black dadurch schaden nehmen. Ist ein Pin als output-Pin definiert, kann der Pegel des Pins durch schreiben einer 1 in value auf high gesetzt und schreiben einer 0 in value auf low gesetzt werden. Durch die Datei active\_low lässt sich dieses Verhalten invertieren. Beinhaltet active\_low eine 0, bedeutet eine 0 in value ein low-Pegel und eine 1 in value einen high-Pegel. Beinhaltet active\_low allerdings eine 1, dann bedeutet eine 0 in value ein high-Pegel und eine 1 in value ein low-Pegel. Die Datei edge kann die Werte none, rising, falling oder both annehmen und dient der Interrupt-Erkennung\cite{kernelGPIO}. Auf das Thema Interrupt wird an dieser Stelle nicht weiter eingegangen.}
+
+\clearpage
+
+\subsection{Pulsweitenmodulation}\label{sec:pwm}
+
+\begin{figure}[ht]
+    \centering
+      \includegraphics[width=1.0\textwidth]{Pictures/011-PWMAuflistung.png}
+      \caption{Auflistung aktiver PWM-Pins}
+      \label{pwmauflistung}
+\end{figure}
+
+{\noindent Bei der Pulsweitenmodulation wird die Ein- und Ausschaltzeit eines Rechtecksignals bei fester Grundfrequenz variiert\cite{MikroctonrollerPWM}. Das Tastverhältnis (engl. duty cycle) errechnet sich aus \[t_{ein} / ( t_{ein} + t_{aus})\] Laut beagleboard.org besitzt der BeagleBone Black acht Pins für die \\Pulsweitenmodulation\cite{BeagleBoardPWM}. Aktive PWM-Pins sind im Pfad \terminal{/sys/class/pwm/} als Ordner aufgelistet (Abbildung \ref{pwmauflistung}). Zur Modifizierung des jeweiligen Pins stehen in dem entsprechenden Ordner unter Anderem die Dateien run, tick\_hz, period\_ns, period\_freq, duty\_ns, duty\_percent, polarity und request zur \\Verfügung\cite{kernelPWM}. run definiert den aktuellen Status des PWM-Pins. Beinhaltet run eine 1, dann ist der Pin eingeschaltet. Beinhaltet run eine 0, dann ist der Pin ausgeschaltet. tick\_hz enthält die aktuelle Systemfrequenz. period\_ns enthält die Zeit einer gesamten Periode in Nanosekunden. period\_freq errechnet sich nach folgender Formel \[period_{freq} = \frac{1}{\frac{period_{ns}}{1000000000ns / s}} = \frac{1000000000ns}{period_{ns} * s}\] Durch duty\_ns wird die Anzahl der Nanosekunden definiert, die der Pegel innerhalb einer Periode auf high gesetzt ist. Somit errechnet sich duty\_percent nach der Formel \[duty_{percent} = \frac{duty_{ns}}{period_{ns}} * 100\] polarity beeinflusst die Polarität des PWM-Pins. Eine 0 definiert den Pin als output-Pin und eine 1 definiert diesen als input-Pin. Die Datei request kann die Information beinhalten, wofür dieser PWM-Pin verwendet wird. Dies kann zum Beispiel die Hintergrundbeleuchtung eines Displays oder die Ansteuerung eines Schrittmotors sein. Ist keine Verwendung eingetragen, dann beinhaltet request die Information, dass der Pin frei ist. Da eine Eintragung einer Verwendung nicht zwingend erforderlich ist, ist es möglich, dass der Pin als frei definiert ist, obwohl dieser schon verwendet wird. Hier ist also Vorsicht geboten!}
+\endgroup}
+
+%----------------------------------------------------------------------------------------
+%	programming Chapter
+%----------------------------------------------------------------------------------------
+\newcommand*{\programming}{\begingroup
+\section{Implementation}\label{sec:implementation}
+{Um die in Abschnitt \ref{sec:gpio} erläuterten Zugriffe auf GPIO-Pins zu implementieren bedarf es nur wenig Aufwand.} 
+
+\begin{figure}[h]
+  \centering
+    \lstinputlisting[language=C++, frame=single, firstline=5, lastline=18]{Code/gpioHandle.cpp}
+    \caption{writeTo Funktion in C++}
+    \label{writeTo}
+\end{figure}
+
+\FloatBarrier
+
+{\noindent Die Hauptaufgabe übernimmt eine Funktion die in Dateien des Dateisystems schreibt. (Abbildung \ref{writeTo}). Diese Funktion wird anschließend mit den entsprechenden Parametern von den weiteren Funktionen aufgerufen, sodass ein Pin mittels der Funktionen aus Abbilung \ref{configGPIO} erzeugt und konfiguriert werden kann.}
+
+\begin{figure}[h]
+  \centering
+    \lstinputlisting[language=C++, frame=single, firstline=20, lastline=56]{Code/gpioHandle.cpp}
+    \caption{GPIO konfigurations-Funktionen in C++}
+    \label{configGPIO}
+\end{figure}
+
+\FloatBarrier
+
+\begin{figure}[h]
+  \centering
+    \lstinputlisting[language=C++, frame=single, firstline=58, lastline=74]{Code/gpioHandle.cpp}
+    \caption{GPIO value-Funktionen in C++}
+    \label{valueGPIO}
+\end{figure}
+
+{\noindent Das Verändern des Pegels geschieht ebenfalls nach diesem Muster. Entsprechende Funktionen sind in Abbildung \ref{valueGPIO} definiert.}
+
+\endgroup}
+
+%----------------------------------------------------------------------------------------
+%	summary Chapter
+%----------------------------------------------------------------------------------------
+\newcommand*{\summary}{\begingroup
+\section{Zusammenfassung}\label{sec:summary}
+{\noindent Das Beispiel des Verwenden eines einfach GPIO-Pins zeigt, dass die Hauptaufgabe des Entwicklers darin besteht, dass Dateisystem von Linux zu überblicken. Ist dieser Schritt geschehen, lässt sich das erlangte Wissen schnell auf weitere Fragestellungen anwenden. Steht einem ein SDK zur Verfügung ist auch der erste Schritt zu einer Lauffähigen Entwicklungsumgebung schnell gemacht.}
+
+\endgroup}
+
+%----------------------------------------------------------------------------------------
+%	sources Chapter
+%----------------------------------------------------------------------------------------
+\newcommand*{\sources}{\begingroup
+
+\clearpage
+
+\begin{thebibliography}{999}
+\bibitem {SystemReferenceManual-P14} System Reference Manual Revision C.1, Seite 14 [Stand 22.05.2014]
+\bibitem {SystemReferenceManual-P18} System Reference Manual Revision C.1, Seite 18 f [Stand 22.05.2014]
+\bibitem {SystemReferenceManual-P30} System Reference Manual Revision C.1, Seite 30 [Stand 22.05.2014]
+\bibitem {SystemReferenceManual-P69} System Reference Manual Revision C.1, Seite 69 [Stand 22.05.2014]
+\bibitem {SystemReferenceManual-P82} System Reference Manual Revision C.1, Seite 82 ff [Stand 22.05.2014]
+
+\bibitem {TIam3358} Texas Instruments - http://www.ti.com/product/am3358 \\{[Stand 08.01.2014]}
+\bibitem {TIDownload} Texas Instruments -\\http://software-dl.ti.com/sitara\_linux/esd/AM335xSDK/latest/index\_FDS.html [Stand 08.01.2014]
+\bibitem {TIWikiUbuntu} Texas Instruments -\\http://processors.wiki.ti.com/index.php/Sitara\_SDK\_Installer \\{[Stand 02.04.2014]}
+\bibitem {TICortexA8} Texas Instruments -\\http://www.ti.com/lsds/ti/tools-software/mainlinelinux.page \\{[Stand 24.06.2013]}
+
+\bibitem {kernelGPIO} Linux Kernel Organization -\\https://www.kernel.org/doc/Documentation/gpio/sysfs.txt \\{[Stand 15.12.2014]}
+\bibitem {kernelPWM} Linux Kernel Organization -\\https://www.kernel.org/doc/Documentation/pwm.txt \\{[Stand 01.12.2014]}
+
+\bibitem {MikroctonrollerPWM} mikrocontroller.net - http://www.mikrocontroller.net/articles/Pulsweitenmodulation \\{[Stand 10.01.2014]}
+\bibitem {BeagleBoardPWM} BeagleBoard.org -\\http://beagleboard.org/support/BoneScript/analogWrite/ \\{[Stand 19.08.2013]}
+\end{thebibliography}
+\endgroup}
+
+\begin{document}
+
+\titlePage\thispagestyle{empty}
+\tableofcontents\thispagestyle{empty}
+\listoffigures
+\introdution
+
+\Hardware
+\tisdk
+\gpio
+\programming
+\summary
+\sources
+
+\end{document}
